@@ -3,7 +3,6 @@ public class WhatsAppSender extends NotificationSender {
 
     @Override
     protected void doSend(Notification n) {
-        // Formally enforcing declared constraint via exception
         if (n.phone == null || !n.phone.startsWith("+")) {
             throw new NotificationConstraintException("phone must start with + and country code");
         }

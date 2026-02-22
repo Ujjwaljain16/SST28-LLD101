@@ -5,10 +5,7 @@ public abstract class NotificationSender {
         this.audit = audit;
     }
 
-    /**
-     * Standardized send method (Template Method).
-     * Centralizes null validation and audit log invariants.
-     */
+    /** Centralized send logic with auditing. */
     public final void send(Notification n) {
         if (n == null) {
             throw new IllegalArgumentException("Notification cannot be null");
@@ -18,7 +15,6 @@ public abstract class NotificationSender {
             doSend(n);
             audit.add(getChannelId() + " sent");
         } catch (RuntimeException ex) {
-            // Centralize audit logging for failures to ensure consistency across channels
             audit.add(getChannelId() + " failed");
             throw ex;
         }

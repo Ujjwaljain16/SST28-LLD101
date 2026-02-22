@@ -28,8 +28,7 @@ public class EligibilityService {
             if (!rr.passed) {
                 status = "NOT_ELIGIBLE";
                 reasons.add(rr.reason);
-                // Behavioral parity: original cade used if-else if, so it stops at first failure.
-                break; 
+                break; // stop at first failure to match legacy engine
             }
         }
 

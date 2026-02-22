@@ -29,9 +29,7 @@ public class CafeteriaService {
 
         for (OrderLine l : lines) {
             MenuItem item = menuRepository.getById(l.itemId);
-            // Behavioral parity: original code does NOT check for null, so it would NPE if item is missing.
-            // We preserve this behavior by letting it happen or being explicit. 
-            // In a production app we'd handle it, but here "behavior identical" is key.
+            // item might be null if not found (original behavior)
             double lineTotal = item.price * l.qty; 
             subtotal += lineTotal;
             summaries.add(new OrderSummary(item.name, l.qty, lineTotal));
@@ -40,7 +38,6 @@ public class CafeteriaService {
         double taxPct = taxPolicy.getTaxRate(customerType);
         double taxAmt = subtotal * (taxPct / 100.0);
         
-        // Behavioral parity: original code used lines.size() which includes all incoming lines.
         double discount = discountPolicy.getDiscount(customerType, subtotal, lines.size());
         double total = subtotal + taxAmt - discount;
 

@@ -3,7 +3,6 @@ public class SmsSender extends NotificationSender {
 
     @Override
     protected void doSend(Notification n) {
-        // Capability variance legalized by contract - subject ignorance is allowed
         System.out.println("SMS -> to=" + n.phone + " body=" + n.body);
     }
 
