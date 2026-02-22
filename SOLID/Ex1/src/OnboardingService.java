@@ -1,47 +1,47 @@
 import java.util.*;
 
 public class OnboardingService {
-    private final FakeDb db;
 
-    public OnboardingService(FakeDb db) { this.db = db; }
+    private final RawInputParser parser;
+    private final RegistrationValidator validator;
+    private final StudentRepository repository;
+    private final StudentIdGenerator idGenerator;
+    private final OnboardingPrinter printer;
 
-    // Intentionally violates SRP: parses + validates + creates ID + saves + prints.
+    public OnboardingService(RawInputParser parser,
+                             RegistrationValidator validator,
+                             StudentRepository repository,
+                             StudentIdGenerator idGenerator,
+                             OnboardingPrinter printer) {
+        this.parser = parser;
+        this.validator = validator;
+        this.repository = repository;
+        this.idGenerator = idGenerator;
+        this.printer = printer;
+    }
+
     public void registerFromRawInput(String raw) {
-        System.out.println("INPUT: " + raw);
+        printer.printInput(raw);
 
-        Map<String,String> kv = new LinkedHashMap<>();
-        String[] parts = raw.split(";");
-        for (String p : parts) {
-            String[] t = p.split("=", 2);
-            if (t.length == 2) kv.put(t[0].trim(), t[1].trim());
-        }
-
-        String name = kv.getOrDefault("name", "");
-        String email = kv.getOrDefault("email", "");
-        String phone = kv.getOrDefault("phone", "");
-        String program = kv.getOrDefault("program", "");
-
-        // validation inline, printing inline
-        List<String> errors = new ArrayList<>();
-        if (name.isBlank()) errors.add("name is required");
-        if (email.isBlank() || !email.contains("@")) errors.add("email is invalid");
-        if (phone.isBlank() || !phone.chars().allMatch(Character::isDigit)) errors.add("phone is invalid");
-        if (!(program.equals("CSE") || program.equals("AI") || program.equals("SWE"))) errors.add("program is invalid");
+        RegistrationData data = parser.parse(raw);
+        List<String> errors = validator.validate(data);
 
         if (!errors.isEmpty()) {
-            System.out.println("ERROR: cannot register");
-            for (String e : errors) System.out.println("- " + e);
+            printer.printErrors(errors);
             return;
         }
 
-        String id = IdUtil.nextStudentId(db.count());
-        StudentRecord rec = new StudentRecord(id, name, email, phone, program);
+        String id = idGenerator.nextId(repository.count());
+        StudentRecord record = new StudentRecord(
+                id,
+                data.name,
+                data.email,
+                data.phone,
+                data.program
+        );
 
-        db.save(rec);
+        repository.save(record);
 
-        System.out.println("OK: created student " + id);
-        System.out.println("Saved. Total students: " + db.count());
-        System.out.println("CONFIRMATION:");
-        System.out.println(rec);
+        printer.printSuccess(record, repository.count());
     }
 }
