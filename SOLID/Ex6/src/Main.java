@@ -15,7 +15,7 @@ public class Main {
             wa.send(n);
         } catch (RuntimeException ex) {
             System.out.println("WA ERROR: " + ex.getMessage());
-            audit.add("WA failed");
+            // Audit handled by NotificationSender.send()
         }
 
         System.out.println("AUDIT entries=" + audit.size());
